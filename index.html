@@ -696,16 +696,48 @@
       padding: 60px 10px;
       font-size: 15px;
     }
-    .open-dbs-btn {
+    .pay-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .pay-step {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       padding: 14px;
-      margin-top: 10px;
       font-size: 15px;
       border-radius: var(--radius-sm);
+      transition: opacity var(--ease-fast);
+    }
+    .pay-step:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .step-num {
+      display: inline-flex;
+      width: 22px; height: 22px;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.08);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pay-step.btn-primary .step-num {
+      background: rgba(255,255,255,0.22);
+    }
+    .pay-step.done {
+      background: rgba(10,155,106,.08);
+      border-color: rgba(10,155,106,.3);
+      color: var(--color-success);
+    }
+    .pay-step.done .step-num {
+      background: var(--color-success);
+      color: var(--neutral-10);
     }
     .share-help {
       font-size: 11px;
@@ -854,13 +886,17 @@
         <div id="qrTarget"></div>
       </div>
 
-      <button class="btn-primary open-dbs-btn" id="saveAndOpenBtn" type="button">
-        <i class="fa-solid fa-mobile-screen"></i> Save QR + Open PayLah
-      </button>
-      <div class="share-help">Saves the QR to your gallery, then opens PayLah. In PayLah, tap the scanner's photo icon → pick the just-saved image.</div>
+      <div class="pay-steps">
+        <button class="btn-secondary pay-step" id="step1Btn" type="button">
+          <span class="step-num">1</span> Save QR
+        </button>
+        <button class="btn-primary pay-step" id="step2Btn" type="button" disabled>
+          <span class="step-num">2</span> Open PayLah
+        </button>
+      </div>
+      <div class="share-help">Save the QR first. Then in PayLah, tap Scan &amp; Pay → photo icon → pick the just-saved image.</div>
 
       <div class="modal-actions">
-        <button class="btn-secondary" id="downloadBtn"><i class="fa-solid fa-download"></i> Save only</button>
         <button class="btn-secondary" id="closeQrBtn">Close</button>
       </div>
     </div>
@@ -1256,6 +1292,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       });
       document.getElementById('qrAmount').textContent = `$${amount.toFixed(2)}`;
       document.getElementById('qrRecipient').textContent = recipientLabel;
+      resetPaySteps();
     }
 
     function showQR() {
@@ -1583,7 +1620,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     document.getElementById('clearBtn').addEventListener('click', clearOrder);
     document.getElementById('closeQrBtn').addEventListener('click',
       () => document.getElementById('qrModal').classList.remove('open'));
-    document.getElementById('downloadBtn').addEventListener('click', downloadQR);
     document.getElementById('settingsBtn').addEventListener('click', openSettings);
     document.getElementById('saveSettingsBtn').addEventListener('click', commitSettings);
     document.getElementById('closeSettingsBtn').addEventListener('click',
@@ -1604,16 +1640,39 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       }
       return null;
     }
-    document.getElementById('saveAndOpenBtn').addEventListener('click', async () => {
+    function paylahLaunchUrl() {
+      const ua = navigator.userAgent || '';
+      if (/Android/i.test(ua)) {
+        return 'intent://#Intent;scheme=dbspaylah;package=com.dbs.dbspaylah;end';
+      }
+      return 'dbspaylah://';
+    }
+    function resetPaySteps() {
+      const s1 = document.getElementById('step1Btn');
+      const s2 = document.getElementById('step2Btn');
+      if (!s1 || !s2) return;
+      s1.classList.remove('done');
+      s1.innerHTML = '<span class="step-num">1</span> Save QR';
+      s2.disabled = true;
+    }
+    document.getElementById('step1Btn').addEventListener('click', async () => {
       const blob = await qrAsBlob();
       if (!blob) { alert('QR not ready yet.'); return; }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `pay-${Date.now()}.png`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1500);
-      setTimeout(() => { window.location.href = 'paylah://'; }, 600);
+      const s1 = document.getElementById('step1Btn');
+      s1.classList.add('done');
+      s1.innerHTML = '<span class="step-num"><i class="fa-solid fa-check"></i></span> Saved';
+      document.getElementById('step2Btn').disabled = false;
+    });
+    document.getElementById('step2Btn').addEventListener('click', () => {
+      window.location.href = paylahLaunchUrl();
     });
     document.getElementById('scanShopQrBtn').addEventListener('click', async () => {
       setScanStatus(null);
