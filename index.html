@@ -125,46 +125,41 @@
       .appbar-title { font-size: 15px; }
     }
 
-    /* ── Main tabs ─── */
-    .main-tabs {
-      position: sticky;
-      top: 0;
-      background: var(--neutral-20);
-      z-index: 5;
-      border-bottom: 1px solid var(--neutral-30);
-    }
-    .main-tabs-inner {
-      max-width: 880px;
-      margin: 0 auto;
+    /* ── Order / Bill tabs (inside app bar) ─── */
+    .appbar-tabs {
       display: flex;
-      gap: 4px;
-      padding: 8px 20px 0;
+      gap: 2px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 10px;
+      padding: 3px;
+      border: 1px solid rgba(255,255,255,0.22);
     }
-    .main-tab {
-      flex: 1;
-      padding: 14px 12px;
+    .appbar-tab {
       background: transparent;
       border: 0;
-      border-bottom: 3px solid transparent;
+      color: var(--neutral-10);
+      opacity: 0.72;
       font-family: var(--font-display);
-      font-size: 15px;
       font-weight: 600;
-      color: var(--neutral-70);
+      font-size: 13px;
+      padding: 7px 12px;
+      border-radius: 7px;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: color var(--ease-fast), border-color var(--ease-fast);
+      gap: 6px;
+      transition: background var(--ease-fast), opacity var(--ease-fast);
     }
-    .main-tab i { font-size: 16px; }
-    .main-tab.active {
-      color: var(--color-accent);
-      border-bottom-color: var(--color-accent);
+    .appbar-tab i { font-size: 13px; }
+    .appbar-tab.active {
+      background: rgba(255,255,255,0.30);
+      opacity: 1;
     }
-    @media (max-width: 720px) {
-      .main-tabs-inner { padding: 6px 12px 0; }
-      .main-tab { font-size: 14px; padding: 12px 8px; }
+    @media (max-width: 560px) {
+      .appbar-title { display: none; }
+      .appbar-tab-label { display: none; }
+      .appbar-tab { padding: 7px 10px; }
+      .appbar-tabs { margin-left: auto; }
     }
 
     /* ── Main ─── */
@@ -774,9 +769,16 @@
     .pay-step-btn:not(:disabled) .step-num {
       background: rgba(255,255,255,0.22);
     }
-    .pay-step-btn.done .step-num {
-      background: var(--neutral-10);
-      color: var(--color-accent);
+    .pay-step-btn.done,
+    .pay-step-btn.done:disabled {
+      background: rgba(10,155,106,.12);
+      color: var(--color-success);
+      cursor: default;
+    }
+    .pay-step-btn.done .step-num,
+    .pay-step-btn.done:disabled .step-num {
+      background: var(--color-success);
+      color: var(--neutral-10);
     }
     .modal-close-btn {
       position: absolute;
@@ -882,20 +884,17 @@
     <div class="appbar-inner">
       <img src="https://cdn.ahlab.org/media/site/ahllogo_white.png" alt="Augmented Human Lab" class="lab-logo">
       <div class="appbar-title">Tea at <strong>Bros</strong></div>
+      <div class="appbar-tabs">
+        <button class="appbar-tab active" data-mtab="order" type="button">
+          <i class="fa-solid fa-mug-saucer"></i><span class="appbar-tab-label">Order</span>
+        </button>
+        <button class="appbar-tab" data-mtab="bill" type="button">
+          <i class="fa-solid fa-receipt"></i><span class="appbar-tab-label">Bill</span>
+        </button>
+      </div>
       <button class="appbar-btn" id="settingsBtn" title="Settings"><i class="fa-solid fa-gear"></i></button>
     </div>
   </header>
-
-  <nav class="main-tabs">
-    <div class="main-tabs-inner">
-      <button class="main-tab active" data-mtab="order" type="button">
-        <i class="fa-solid fa-mug-saucer"></i> Order
-      </button>
-      <button class="main-tab" data-mtab="bill" type="button">
-        <i class="fa-solid fa-receipt"></i> Bill
-      </button>
-    </div>
-  </nav>
 
   <main class="main">
     <div class="tab-pane active" id="orderPane">
@@ -933,7 +932,6 @@
       <button class="modal-close-btn" id="closeQrBtn" type="button" aria-label="Close">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <h2 id="qrTitle">PayNow / PayLah</h2>
 
       <div class="qr-tabs" id="qrTabs" style="display:none">
         <button class="qr-tab active" data-mode="paynow" type="button">PayNow</button>
@@ -1185,7 +1183,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
     function setMainTab(id) {
       currentMainTab = id;
-      document.querySelectorAll('.main-tab').forEach(t => {
+      document.querySelectorAll('.appbar-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.mtab === id);
       });
       document.getElementById('orderPane').classList.toggle('active', id === 'order');
@@ -1318,7 +1316,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
     function renderQrInModal(mode, amount) {
       const s = settings;
-      let qrString, recipientLabel, title;
+      let qrString, recipientLabel;
       if (mode === 'paynow') {
         qrString = buildPayNowQR({
           recipientType: s.recipientType,
@@ -1327,13 +1325,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
           reference: s.reference
         });
         recipientLabel = `${s.recipientType === 'mobile' ? 'Mobile' : 'UEN'}: ${s.recipientValue}`;
-        title = 'PayNow / PayLah';
       } else {
         qrString = buildNetsDynamicQR(s.netsTemplate.qrString, amount);
         recipientLabel = s.netsTemplate.merchantName || 'Merchant';
-        title = 'Scan to Pay';
       }
-      document.getElementById('qrTitle').textContent = title;
       document.querySelectorAll('.qr-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.mode === mode);
       });
@@ -1681,7 +1676,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     document.getElementById('saveSettingsBtn').addEventListener('click', commitSettings);
     document.getElementById('closeSettingsBtn').addEventListener('click',
       () => document.getElementById('settingsModal').classList.remove('open'));
-    document.querySelectorAll('.main-tab').forEach(t => {
+    document.querySelectorAll('.appbar-tab').forEach(t => {
       t.addEventListener('click', () => setMainTab(t.dataset.mtab));
     });
     async function qrAsBlob() {
@@ -1708,11 +1703,33 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       }
       return 'dbspaylah://';
     }
+    const SAVED_HASH_KEY = 'teaTap.savedOrderHash';
+    function orderHash() {
+      return MENU
+        .filter(d => counts[d.id] > 0)
+        .map(d => `${d.id}x${counts[d.id]}`)
+        .join('|');
+    }
+    function markStep1Saved() {
+      const s1 = document.getElementById('step1Btn');
+      const s2 = document.getElementById('step2Btn');
+      if (!s1 || !s2) return;
+      s1.classList.add('done');
+      s1.disabled = true;
+      s1.innerHTML = '<span class="step-num"><i class="fa-solid fa-check"></i></span> Saved';
+      s2.disabled = false;
+    }
     function resetPaySteps() {
       const s1 = document.getElementById('step1Btn');
       const s2 = document.getElementById('step2Btn');
       if (!s1 || !s2) return;
+      const savedHash = localStorage.getItem(SAVED_HASH_KEY);
+      if (savedHash && savedHash === orderHash()) {
+        markStep1Saved();
+        return;
+      }
       s1.classList.remove('done');
+      s1.disabled = false;
       s1.innerHTML = '<span class="step-num">1</span> Save QR';
       s2.disabled = true;
     }
@@ -1727,10 +1744,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1500);
-      const s1 = document.getElementById('step1Btn');
-      s1.classList.add('done');
-      s1.innerHTML = '<span class="step-num"><i class="fa-solid fa-check"></i></span> Saved';
-      document.getElementById('step2Btn').disabled = false;
+      try { localStorage.setItem(SAVED_HASH_KEY, orderHash()); } catch {}
+      markStep1Saved();
     });
     document.getElementById('step2Btn').addEventListener('click', () => {
       window.location.href = paylahLaunchUrl();
