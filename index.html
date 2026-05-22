@@ -375,17 +375,38 @@
       box-shadow: none;
       cursor: default;
     }
-    .clear-link {
-      align-self: center;
-      background: transparent;
-      border: 0;
-      color: var(--neutral-70);
-      font-family: var(--font-display);
-      font-size: 13px;
-      cursor: pointer;
-      padding: 4px 10px;
+    .pay-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
     }
-    .clear-link:hover { color: var(--color-error); }
+    .pay-row .pay-btn {
+      flex: 1;
+      min-width: 0;
+    }
+    .clear-icon-btn {
+      flex: 0 0 56px;
+      background: var(--neutral-10);
+      border: 1px solid var(--neutral-30);
+      color: var(--neutral-70);
+      border-radius: var(--radius);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--ease-fast), border-color var(--ease-fast), background var(--ease-fast);
+      box-shadow: 0 2px 8px rgba(14,15,17,.04);
+    }
+    .clear-icon-btn:hover:not(:disabled) {
+      color: var(--color-error);
+      border-color: var(--color-error);
+      background: rgba(168,7,26,.04);
+    }
+    .clear-icon-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
 
     /* ── Modals ─── */
     .modal {
@@ -855,17 +876,21 @@
 
   <div class="footer">
     <div class="footer-inner">
-      <button class="pay-btn" id="payBtn" disabled>
-        <span class="pay-left">
-          <i class="fa-solid fa-qrcode"></i>
-          Pay
-        </span>
-        <span class="pay-right">
-          <span class="pay-count" id="totalCount">0 items</span>
-          <span class="pay-amount" id="totalAmount">$0.00</span>
-        </span>
-      </button>
-      <button class="clear-link" id="clearBtn">Clear order</button>
+      <div class="pay-row">
+        <button class="pay-btn" id="payBtn" disabled>
+          <span class="pay-left">
+            <i class="fa-solid fa-qrcode"></i>
+            Pay
+          </span>
+          <span class="pay-right">
+            <span class="pay-count" id="totalCount">0 items</span>
+            <span class="pay-amount" id="totalAmount">$0.00</span>
+          </span>
+        </button>
+        <button class="clear-icon-btn" id="clearBtn" title="Clear order" aria-label="Clear order" disabled>
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1149,6 +1174,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         `${count} item${count === 1 ? '' : 's'}`;
       document.getElementById('totalAmount').textContent = `$${amount.toFixed(2)}`;
       document.getElementById('payBtn').disabled = amount <= 0;
+      document.getElementById('clearBtn').disabled = amount <= 0;
     }
     function clearOrder() {
       MENU.forEach(d => counts[d.id] = 0);
