@@ -253,9 +253,19 @@
     .thumb-icon {
       font-size: 32px;
       line-height: 1;
+      filter: drop-shadow(0 1px 2px rgba(14,15,17,.15));
     }
-    .thumb-hot  { color: #E76F2C; }
-    .thumb-cold { color: #00A0C9; }
+    .kind-badge {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 11px;
+      line-height: 1;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,.6));
+    }
+    .kind-hot  { color: #E76F2C; }
+    .kind-cold { color: #1E88E5; }
     .tile-name {
       font-family: var(--font-display);
       font-weight: 500;
@@ -1014,37 +1024,37 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     window.LOCKED_MODE     = !!window.BAKED_NETS_QR && !window.CONFIG_MODE;
 
     const MENU = [
-      { id: 'kopi-sweet-hot',         name: 'Kopi',                  price: 1.10, kind: 'hot',  category: 'kopi', selfServe: true },
-      { id: 'kopi-sweet-iced',        name: 'Iced Kopi',             price: 1.60, kind: 'cold', category: 'kopi' },
-      { id: 'kopi-c-hot',             name: 'Kopi C',                price: 1.20, kind: 'hot',  category: 'kopi' },
-      { id: 'kopi-c-iced',            name: 'Iced Kopi C',           price: 1.70, kind: 'cold', category: 'kopi' },
-      { id: 'kopi-o-hot',             name: 'Kopi O',                price: 1.00, kind: 'hot',  category: 'kopi', selfServe: true },
-      { id: 'kopi-o-iced',            name: 'Iced Kopi O',           price: 1.50, kind: 'cold', category: 'kopi' },
-      { id: 'black-coffee-lemon-hot', name: 'Black Coffee Lemon',    price: 1.40, kind: 'hot',  category: 'kopi' },
-      { id: 'bc-honey-lemon-hot',     name: 'Black Coffee Honey Lemon', price: 2.50, kind: 'hot', category: 'kopi' },
+      { id: 'kopi-sweet-hot',         name: 'Kopi',                  price: 1.10, kind: 'hot',  category: 'kopi', color: '#9B6B45', selfServe: true },
+      { id: 'kopi-sweet-iced',        name: 'Iced Kopi',             price: 1.60, kind: 'cold', category: 'kopi', color: '#9B6B45' },
+      { id: 'kopi-c-hot',             name: 'Kopi C',                price: 1.20, kind: 'hot',  category: 'kopi', color: '#B98666' },
+      { id: 'kopi-c-iced',            name: 'Iced Kopi C',           price: 1.70, kind: 'cold', category: 'kopi', color: '#B98666' },
+      { id: 'kopi-o-hot',             name: 'Kopi O',                price: 1.00, kind: 'hot',  category: 'kopi', color: '#3A2418', selfServe: true },
+      { id: 'kopi-o-iced',            name: 'Iced Kopi O',           price: 1.50, kind: 'cold', category: 'kopi', color: '#3A2418' },
+      { id: 'black-coffee-lemon-hot', name: 'Black Coffee Lemon',    price: 1.40, kind: 'hot',  category: 'kopi', color: '#4A2E1C' },
+      { id: 'bc-honey-lemon-hot',     name: 'Black Coffee Honey Lemon', price: 2.50, kind: 'hot', category: 'kopi', color: '#5A3820' },
 
-      { id: 'teh-sweet-hot',          name: 'Teh',                   price: 1.10, kind: 'hot',  category: 'teh', selfServe: true },
-      { id: 'teh-sweet-iced',         name: 'Iced Teh',              price: 1.60, kind: 'cold', category: 'teh' },
-      { id: 'teh-c-hot',              name: 'Teh C',                 price: 1.20, kind: 'hot',  category: 'teh' },
-      { id: 'teh-c-iced',             name: 'Iced Teh C',            price: 1.70, kind: 'cold', category: 'teh' },
-      { id: 'teh-o-hot',              name: 'Teh O',                 price: 1.00, kind: 'hot',  category: 'teh', selfServe: true },
-      { id: 'teh-o-iced',             name: 'Iced Teh O',            price: 1.50, kind: 'cold', category: 'teh' },
-      { id: 'lemon-tea-hot',          name: 'Lemon Tea',             price: 1.40, kind: 'hot',  category: 'teh' },
-      { id: 'lemon-tea-iced',         name: 'Iced Lemon Tea',        price: 1.60, kind: 'cold', category: 'teh' },
-      { id: 'ginger-tea-hot',         name: 'Ginger Tea',            price: 1.50, kind: 'hot',  category: 'teh' },
-      { id: 'ginger-tea-iced',        name: 'Iced Ginger Tea',       price: 2.00, kind: 'cold', category: 'teh' },
-      { id: 'honey-lemon-tea-hot',    name: 'Honey Lemon Tea',       price: 1.80, kind: 'hot',  category: 'teh' },
-      { id: 'honey-lemon-tea-iced',   name: 'Iced Honey Lemon Tea',  price: 2.20, kind: 'cold', category: 'teh' },
-      { id: 'honey-milk-tea-hot',     name: 'Honey Milk Tea',        price: 2.50, kind: 'hot',  category: 'teh' },
-      { id: 'chrysanthemum-hot',      name: 'Crysanthm Tea',         price: 1.50, kind: 'hot',  category: 'teh' },
+      { id: 'teh-sweet-hot',          name: 'Teh',                   price: 1.10, kind: 'hot',  category: 'teh', color: '#C5803E', selfServe: true },
+      { id: 'teh-sweet-iced',         name: 'Iced Teh',              price: 1.60, kind: 'cold', category: 'teh', color: '#C5803E' },
+      { id: 'teh-c-hot',              name: 'Teh C',                 price: 1.20, kind: 'hot',  category: 'teh', color: '#D69E68' },
+      { id: 'teh-c-iced',             name: 'Iced Teh C',            price: 1.70, kind: 'cold', category: 'teh', color: '#D69E68' },
+      { id: 'teh-o-hot',              name: 'Teh O',                 price: 1.00, kind: 'hot',  category: 'teh', color: '#A66834', selfServe: true },
+      { id: 'teh-o-iced',             name: 'Iced Teh O',            price: 1.50, kind: 'cold', category: 'teh', color: '#A66834' },
+      { id: 'lemon-tea-hot',          name: 'Lemon Tea',             price: 1.40, kind: 'hot',  category: 'teh', color: '#D4A444' },
+      { id: 'lemon-tea-iced',         name: 'Iced Lemon Tea',        price: 1.60, kind: 'cold', category: 'teh', color: '#D4A444' },
+      { id: 'ginger-tea-hot',         name: 'Ginger Tea',            price: 1.50, kind: 'hot',  category: 'teh', color: '#B57836' },
+      { id: 'ginger-tea-iced',        name: 'Iced Ginger Tea',       price: 2.00, kind: 'cold', category: 'teh', color: '#B57836' },
+      { id: 'honey-lemon-tea-hot',    name: 'Honey Lemon Tea',       price: 1.80, kind: 'hot',  category: 'teh', color: '#E5A532' },
+      { id: 'honey-lemon-tea-iced',   name: 'Iced Honey Lemon Tea',  price: 2.20, kind: 'cold', category: 'teh', color: '#E5A532' },
+      { id: 'honey-milk-tea-hot',     name: 'Honey Milk Tea',        price: 2.50, kind: 'hot',  category: 'teh', color: '#D4A56A' },
+      { id: 'chrysanthemum-hot',      name: 'Crysanthm Tea',         price: 1.50, kind: 'hot',  category: 'teh', color: '#D6BD5C' },
 
-      { id: 'milo-hot',               name: 'Milo',                  price: 1.30, kind: 'hot',  category: 'specials' },
-      { id: 'milo-iced',              name: 'Iced Milo',             price: 1.80, kind: 'cold', category: 'specials' },
-      { id: 'milo-cap-hot',           name: 'Milo Cappuccino',       price: 2.00, kind: 'hot',  category: 'specials' },
-      { id: 'milo-cap-iced',          name: 'Iced Milo Cap',         price: 2.50, kind: 'cold', category: 'specials' },
-      { id: 'matcha-hot',             name: 'Matcha Latte',          price: 2.00, kind: 'hot',  category: 'specials' },
-      { id: 'matcha-iced',            name: 'Iced Matcha',           price: 2.50, kind: 'cold', category: 'specials' },
-      { id: 'hot-milk',               name: 'Hot Milk',              price: 1.30, kind: 'hot',  category: 'specials' },
+      { id: 'milo-hot',               name: 'Milo',                  price: 1.30, kind: 'hot',  category: 'specials', color: '#4A2C16' },
+      { id: 'milo-iced',              name: 'Iced Milo',             price: 1.80, kind: 'cold', category: 'specials', color: '#4A2C16' },
+      { id: 'milo-cap-hot',           name: 'Milo Cappuccino',       price: 2.00, kind: 'hot',  category: 'specials', color: '#5C3820' },
+      { id: 'milo-cap-iced',          name: 'Iced Milo Cap',         price: 2.50, kind: 'cold', category: 'specials', color: '#5C3820' },
+      { id: 'matcha-hot',             name: 'Matcha Latte',          price: 2.00, kind: 'hot',  category: 'specials', color: '#7BAA5E' },
+      { id: 'matcha-iced',            name: 'Iced Matcha',           price: 2.50, kind: 'cold', category: 'specials', color: '#7BAA5E' },
+      { id: 'hot-milk',               name: 'Hot Milk',              price: 1.30, kind: 'hot',  category: 'specials', color: '#C9B58A' },
     ];
     const CATEGORIES = [
       { id: 'kopi',     label: 'Kopi',     icon: 'fa-mug-hot' },
@@ -1123,8 +1133,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         const tile = document.createElement('div');
         tile.className = 'tile' + (c > 0 ? ' has-count' : '');
         const iconClass = d.kind === 'cold' ? 'fa-glass-water' : 'fa-mug-hot';
+        const kindIcon  = d.kind === 'cold' ? 'fa-snowflake'   : 'fa-fire-flame-curved';
         tile.innerHTML = `
-          <div class="thumb"><i class="fa-solid ${iconClass} thumb-icon thumb-${d.kind}"></i></div>
+          <div class="thumb"><i class="fa-solid ${iconClass} thumb-icon" style="color:${d.color}"></i></div>
+          <i class="fa-solid ${kindIcon} kind-badge kind-${d.kind}"></i>
           <div class="tile-name">${d.name}</div>
           <div class="tile-price">$${d.price.toFixed(2)}</div>
           <button class="minus ${c > 0 ? 'show' : ''}" data-id="${d.id}" aria-label="Remove one">−</button>
