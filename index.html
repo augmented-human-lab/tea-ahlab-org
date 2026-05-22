@@ -1643,7 +1643,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     function paylahLaunchUrl() {
       const ua = navigator.userAgent || '';
       if (/Android/i.test(ua)) {
-        return 'intent://#Intent;scheme=dbspaylah;package=com.dbs.dbspaylah;end';
+        // PayLah's intent-filter requires host=com.dbs.paylah; without it the
+        // OS can't match the URI and falls through to Play Store. browser_fallback_url
+        // brings the user back here instead of Play Store if the app is absent.
+        const fb = encodeURIComponent('https://tea.ahlab.org/');
+        return `intent://com.dbs.paylah/#Intent;scheme=dbspaylah;package=com.dbs.dbspaylah;S.browser_fallback_url=${fb};end`;
       }
       return 'dbspaylah://';
     }
