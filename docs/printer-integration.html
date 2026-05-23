@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bluetooth printer integration — Tea at Bros</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #0E0F11;
+    font-size: 11pt;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #0E0F11;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: #5E6875;
+    font-size: 11pt;
+    margin-bottom: 28px;
+  }
+  .accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #00D7EE 0%, #6100FF 100%);
+    margin: 0 0 26px;
+    border-radius: 2px;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #6100FF;
+    margin: 22px 0 8px;
+    border-bottom: 1px solid #EDF0F3;
+    padding-bottom: 4px;
+  }
+  h3 {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #0E0F11;
+    margin: 14px 0 4px;
+  }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 4px 0 12px; padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  strong { font-weight: 600; }
+  code, kbd, .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 9.5pt;
+    background: #F4F7F9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #0E0F11;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+    font-size: 10pt;
+  }
+  th, td {
+    text-align: left;
+    padding: 7px 8px;
+    border-bottom: 1px solid #EDF0F3;
+    vertical-align: top;
+  }
+  th {
+    background: #F4F7F9;
+    font-weight: 600;
+    color: #5E6875;
+    text-transform: uppercase;
+    font-size: 8.5pt;
+    letter-spacing: 0.04em;
+  }
+  .pill {
+    display: inline-block;
+    background: rgba(97,0,255,0.10);
+    color: #6100FF;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 9pt;
+    font-weight: 600;
+  }
+  .pick {
+    background: rgba(0,215,238,0.10);
+    border-left: 3px solid #00D7EE;
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .warn {
+    background: rgba(168,7,26,0.06);
+    border-left: 3px solid #A8071A;
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .footer {
+    margin-top: 28px;
+    padding-top: 12px;
+    border-top: 1px solid #EDF0F3;
+    color: #5E6875;
+    font-size: 9pt;
+  }
+</style>
+</head>
+<body>
+
+<h1>Bluetooth printer integration</h1>
+<div class="subtitle">Tea at Bros · Augmented Human Lab · <span class="mono">tea.ahlab.org</span></div>
+<div class="accent-bar"></div>
+
+<h2>Hard constraints</h2>
+<ol>
+  <li><strong>Android Chrome only.</strong> Web Bluetooth is unsupported on every iOS browser (Safari, Chrome, Firefox — all WebKit, Apple blocks it). iPhone users in the group cannot print from this web app under any circumstance. Don't buy a printer expecting them to.</li>
+  <li><strong>BLE (Bluetooth Low Energy), not Bluetooth Classic / SPP.</strong> Web Bluetooth speaks only BLE GATT. Most older "POS portable" thermal printers (including the Custom My Printer we previously evaluated) use Bluetooth Classic SPP — those can't talk to Chrome and are out.</li>
+  <li><strong>ESC/POS preferred.</strong> The universal thermal-printer command set. Models using proprietary protocols (NIIMBOT, JINGCHEN B-series) are workable but require reverse-engineered libraries that drift with firmware updates — avoid for the first build.</li>
+  <li><strong>HTTPS required.</strong> Web Bluetooth refuses to run on http:// or file:// origins. Already covered by <span class="mono">tea.ahlab.org</span> via GitHub Pages.</li>
+</ol>
+
+<h2>Shortlist (Singapore-purchasable, BLE + ESC/POS)</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>Type</th>
+      <th>Paper</th>
+      <th>Price (SGD)</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Goojprt PT-210</strong> <span class="pill">first-buy</span></td>
+      <td>Receipt</td>
+      <td>58 mm thermal roll</td>
+      <td>~30–50</td>
+      <td>Most-documented hobby ESC/POS BLE printer; plenty of community examples driving it from Chrome.</td>
+    </tr>
+    <tr>
+      <td><strong>Goojprt PT-280</strong></td>
+      <td>Receipt</td>
+      <td>58 mm thermal roll, bigger battery</td>
+      <td>~50–70</td>
+      <td>Same protocol as PT-210, sturdier build.</td>
+    </tr>
+    <tr>
+      <td><strong>MUNBYN ITPP068BT</strong></td>
+      <td>Receipt / label</td>
+      <td>58 mm</td>
+      <td>~60–90</td>
+      <td>ESC/POS, BLE. Active community.</td>
+    </tr>
+    <tr>
+      <td><strong>Phomemo M02 Pro</strong></td>
+      <td>Label / sticker</td>
+      <td>53 mm sticker roll</td>
+      <td>~70–100</td>
+      <td>Popular pocket sticker. ESC/POS-ish with quirks; community JS libraries exist. Not roll paper.</td>
+    </tr>
+    <tr>
+      <td><strong>MUNBYN ITPP047P</strong></td>
+      <td>Receipt</td>
+      <td>80 mm thermal</td>
+      <td>~120–180</td>
+      <td>Wider receipt format; ESC/POS BLE.</td>
+    </tr>
+    <tr>
+      <td><strong>Star Micronics SM-L200</strong></td>
+      <td>Receipt</td>
+      <td>58 mm</td>
+      <td>~300–400</td>
+      <td>Pro-grade, MFi/BLE, very reliable. Overkill for staff use.</td>
+    </tr>
+    <tr>
+      <td><strong>Epson TM-P20 (BT)</strong></td>
+      <td>Receipt</td>
+      <td>58 mm</td>
+      <td>~600–800</td>
+      <td>Pro-grade. Same comment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="pick">
+  <strong>Recommended first buy:</strong> Goojprt PT-210. Cheapest, well-documented, has working browser examples from other people's projects, and 58 mm receipt format matches the "print the bill" need. If it doesn't work out the loss is ~SGD 30.
+</div>
+
+<h2>Models to avoid for this project</h2>
+<ul>
+  <li>Any printer labelled "Bluetooth printer" with no explicit BLE mention — likely Classic SPP, will not pair with Chrome.</li>
+  <li>NIIMBOT D110 / D11 / D101 — popular but proprietary protocol; reverse-engineered libraries are brittle.</li>
+  <li>Custom My Printer (the one previously evaluated) — Classic SPP only, confirmed.</li>
+  <li>Brother / HP / Canon "mobile printers" — these are MFi / AirPrint / Mopria, driven via the OS print stack, not Web Bluetooth.</li>
+</ul>
+
+<h2>Wiring outline — future implementation</h2>
+<p>This is a sketch only, not implemented yet. Approximate scope: 200–300 lines of JS in <span class="mono">index.html</span>, plus a small persisted "Selected printer" setting.</p>
+
+<h3>1. Detect Web Bluetooth support</h3>
+<p>Feature-detect at boot: <span class="mono">'bluetooth' in navigator</span>. If false (iOS, older browsers), hide the Print button entirely so nothing appears broken.</p>
+
+<h3>2. Add a Print button on the Bill tab</h3>
+<p>Sit it next to the receipt or in the appbar of the Bill view. Visible only when Web Bluetooth is available. First press launches the pairing flow.</p>
+
+<h3>3. Request the device and grab the write characteristic</h3>
+<p>Open the system Bluetooth picker via <span class="mono">navigator.bluetooth.requestDevice(...)</span> filtered to the printer's service UUID (Goojprt and most cheap BLE thermal printers use a vendor-common <span class="mono">0000ff00-0000-1000-8000-00805f9b34fb</span> service with a write characteristic at <span class="mono">0000ff02-…</span>). User picks the printer from the OS dialog. Chrome remembers the choice across sessions, so this happens once per device.</p>
+
+<h3>4. Render the bill as ESC/POS bytes</h3>
+<p>Build a <span class="mono">Uint8Array</span> sequence of ESC/POS commands: initialise printer, set alignment / bold / size, write header line ("Tea at Bros"), loop the order lines, draw a separator, write total, advance and cut. The line items already exist in JS (the Bill tab reads them from <span class="mono">counts</span> and <span class="mono">MENU</span>).</p>
+
+<h3>5. Stream the bytes to the printer</h3>
+<p>BLE has a per-write MTU around 20 bytes (often 100+ on newer phones, but assume 20 for safety). Split the byte array into chunks and write sequentially to the characteristic with a short delay between chunks. Wrap in try/catch and surface a clear error if the connection drops.</p>
+
+<h3>6. Persist the chosen printer (optional)</h3>
+<p>Once a printer is paired, store its device-id hint in <span class="mono">localStorage</span> so the next visit skips the picker if Chrome still remembers it. If Chrome has forgotten (happens after deep app-switches / power cycles), gracefully re-request.</p>
+
+<h3>7. Fallback for non-Android users</h3>
+<p>Add a "Print via your phone's printer" button that calls <span class="mono">window.print()</span> with a print stylesheet that hides everything except the receipt section. Routes through AirPrint / Mopria / any cloud printer the user already has set up. Not as nice as a 58 mm receipt printer for this use case, but the only path on iOS.</p>
+
+<h2>Risks and practical caveats</h2>
+<ul>
+  <li><strong>Per-vendor ESC/POS quirks.</strong> Every cheap thermal printer ignores some subset of standard ESC/POS commands and substitutes its own. Goojprt PT-210's quirks are well-documented; budget half a day to tune the byte sequence after the first prints come out mis-aligned.</li>
+  <li><strong>Pairing memory drift.</strong> Android occasionally forgets paired Web Bluetooth devices between Chrome restarts or after several days. Expect a "select printer" tap every few sessions; don't promise users a permanent connection.</li>
+  <li><strong>Battery and paper.</strong> Mobile thermal printers are small Li-ion + thermal heads. Keep it charged, buy 2–3 spare rolls, store rolls flat.</li>
+  <li><strong>Thermal print fade.</strong> Receipts printed on thermal paper fade over months of exposure to sunlight or heat. Fine for daily-use snack bills; not fine for accounting records.</li>
+  <li><strong>No iPhone path without native app.</strong> Repeat: iOS users cannot print from this web app via Bluetooth, ever. AirPrint via <span class="mono">window.print()</span> is the only iOS path, and only works with AirPrint-certified printers (most cheap thermal ones are not).</li>
+</ul>
+
+<div class="warn">
+  <strong>One-line summary:</strong> buy a Goojprt PT-210 (~SGD 30–50), implement Web Bluetooth + ESC/POS in ~250 lines, accept that only Android users will print and iPhones must use AirPrint or skip the feature.
+</div>
+
+<div class="footer">
+  Source: <span class="mono">/Users/sankha/Projects/ahlab-org/ahl-tea-html5/docs/printer-integration.html</span> · regenerate the PDF with: <span class="mono">"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --print-to-pdf=docs/printer-integration.pdf docs/printer-integration.html</span>
+</div>
+
+</body>
+</html>
