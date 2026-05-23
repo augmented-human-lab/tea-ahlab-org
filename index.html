@@ -156,6 +156,78 @@
       .appbar-title { font-size: 15px; }
     }
 
+    /* ── Install banner ─── */
+    .install-banner {
+      background: var(--neutral-10);
+      border-bottom: 1px solid var(--neutral-30);
+      box-shadow: 0 4px 12px rgba(14,15,17,.05);
+      animation: installSlide 240ms ease-out;
+    }
+    @keyframes installSlide {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .install-banner-inner {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .install-banner-icon {
+      width: 40px; height: 40px;
+      border-radius: 9px;
+      flex: 0 0 40px;
+      box-shadow: 0 2px 6px rgba(97,0,255,.18);
+    }
+    .install-banner-text { flex: 1; min-width: 0; }
+    .install-banner-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--neutral-100);
+      line-height: 1.2;
+    }
+    .install-banner-sub {
+      font-size: 12px;
+      color: var(--neutral-70);
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+    .install-banner-sub i { color: var(--color-accent); }
+    .install-banner-action {
+      background: var(--color-accent);
+      color: var(--neutral-10);
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .install-banner-action:hover { background: var(--color-accent-dark); }
+    .install-banner-close {
+      background: transparent;
+      border: 0;
+      color: var(--neutral-70);
+      font-size: 16px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 32px;
+    }
+    .install-banner-close:hover { background: var(--neutral-20); color: var(--neutral-100); }
+    @media (max-width: 480px) {
+      .install-banner-inner { padding: 8px 12px; gap: 10px; }
+      .install-banner-icon { width: 36px; height: 36px; flex-basis: 36px; }
+    }
+
     /* ── Order / Bill tabs (inside app bar) ─── */
     .appbar-tabs {
       display: flex;
@@ -910,6 +982,20 @@
   </style>
 </head>
 <body>
+
+  <div class="install-banner" id="installBanner" hidden>
+    <div class="install-banner-inner">
+      <img src="assets/icon-192.png" alt="" class="install-banner-icon">
+      <div class="install-banner-text">
+        <div class="install-banner-title">Install Tea at Bros</div>
+        <div class="install-banner-sub" id="installBannerSub">Get one-tap access from your home screen</div>
+      </div>
+      <button class="install-banner-action" id="installBannerActionBtn" type="button">Install</button>
+      <button class="install-banner-close" id="installBannerCloseBtn" type="button" aria-label="Dismiss">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
 
   <header class="appbar">
     <div class="appbar-inner">
@@ -1852,6 +1938,67 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       const gear = document.getElementById('settingsBtn');
       if (gear) gear.style.display = 'none';
     }
+
+    // ── Install prompt ─────────────────────────────────────────
+    const INSTALL_DISMISS_KEY = 'teaTap.installPromptDismissedAt';
+    const INSTALL_RENAG_DAYS = 7;
+    let deferredInstallPrompt = null;
+
+    function isPwaStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches
+          || window.navigator.standalone === true;
+    }
+    function bannerDismissedRecently() {
+      const t = parseInt(localStorage.getItem(INSTALL_DISMISS_KEY) || '0', 10);
+      return t && (Date.now() - t) < INSTALL_RENAG_DAYS * 86400000;
+    }
+    function showInstallBanner(mode) {
+      if (isPwaStandalone() || bannerDismissedRecently()) return;
+      const banner = document.getElementById('installBanner');
+      const sub    = document.getElementById('installBannerSub');
+      const action = document.getElementById('installBannerActionBtn');
+      if (mode === 'ios') {
+        sub.innerHTML = 'Tap <i class="fa-solid fa-arrow-up-from-bracket"></i> Share, then <strong>Add to Home Screen</strong>';
+        action.style.display = 'none';
+      } else {
+        sub.textContent = 'Get one-tap access from your home screen';
+        action.style.display = 'inline-flex';
+      }
+      banner.hidden = false;
+    }
+    function hideInstallBanner() {
+      document.getElementById('installBanner').hidden = true;
+    }
+    function rememberDismiss() {
+      try { localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now())); } catch {}
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      showInstallBanner('android');
+    });
+    window.addEventListener('appinstalled', () => {
+      hideInstallBanner();
+      deferredInstallPrompt = null;
+    });
+
+    document.getElementById('installBannerActionBtn').addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      hideInstallBanner();
+      if (outcome === 'dismissed') rememberDismiss();
+    });
+    document.getElementById('installBannerCloseBtn').addEventListener('click', () => {
+      hideInstallBanner();
+      rememberDismiss();
+    });
+
+    // iOS Safari never fires beforeinstallprompt — show our own hint
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) showInstallBanner('ios');
 
   </script>
 </body>
